@@ -1,4 +1,4 @@
-import '3ds_recommendation.dart';
+import 'threeds_recommendation.dart';
 import 'authenticated_token.dart';
 import 'authentication.dart';
 import 'card_info.dart';

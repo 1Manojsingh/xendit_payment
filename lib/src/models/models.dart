@@ -1,4 +1,4 @@
-export '3ds_recommendation.dart';
+export 'threeds_recommendation.dart';
 export 'address.dart';
 export 'authenticated_token.dart';
 export 'authentication.dart';

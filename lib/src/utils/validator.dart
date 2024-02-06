@@ -1,3 +1,6 @@
+// ignore_for_file: constant_identifier_names
+
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 /// List of Card Types
@@ -93,10 +96,7 @@ class CardValidator {
 
     String ccvn = cleanCvn(cardCVN);
 
-    return _isNumeric(ccvn) &&
-        int.parse(ccvn) >= 0 &&
-        ccvn.length >= 3 &&
-        ccvn.length <= 4;
+    return _isNumeric(ccvn) && int.parse(ccvn) >= 0 && ccvn.length >= 3 && ccvn.length <= 4;
   }
 
   /// Computes the card type based on the card number
@@ -188,13 +188,11 @@ class CardValidator {
     int expMonth = _number(expirationMonth);
     int expYear = _number(expirationYear);
 
-    return (expYear == currentYear && expMonth >= currentMonth) ||
-        expYear > currentYear;
+    return (expYear == currentYear && expMonth >= currentMonth) || expYear > currentYear;
   }
 
   static bool _isCardAmex(String? cardNumber) {
-    return cardNumber != null &&
-        (cardNumber.startsWith("34") || cardNumber.startsWith("37"));
+    return cardNumber != null && (cardNumber.startsWith("34") || cardNumber.startsWith("37"));
   }
 
   static bool _isCardMastercard(String? cardNumber) {
@@ -261,7 +259,7 @@ class CardValidator {
       try {
         number = int.parse(str);
       } catch (e) {
-        print(e.toString());
+        debugPrint(e.toString());
       }
     }
 

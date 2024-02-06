@@ -76,9 +76,7 @@ class Xendit {
       'amount': amount,
     };
 
-    if (currency != null) {
-      params['currency'] = currency;
-    }
+    params['currency'] = currency;
 
     return platform.createAuthentication(params: params);
   }
