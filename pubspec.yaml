@@ -1,7 +1,8 @@
 name: xendit_flutter
 description: "A new Flutter plugin project."
 version: 0.0.1
-homepage:
+homepage: https://github.com/Irfan234-afif/xendit_flutter
+repository: https://github.com/Irfan234-afif/xendit_flutter
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
