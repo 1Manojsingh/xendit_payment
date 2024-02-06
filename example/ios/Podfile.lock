@@ -1,0 +1,39 @@
+PODS:
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - Xendit (3.7.0):
+    - Xendit/Default (= 3.7.0)
+  - Xendit/Default (3.7.0):
+    - Xendit/XenditObjC
+  - Xendit/XenditObjC (3.7.0)
+  - xendit_flutter (0.0.1):
+    - Flutter
+    - Xendit (= 3.7.0)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - xendit_flutter (from `.symlinks/plugins/xendit_flutter/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Xendit
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  xendit_flutter:
+    :path: ".symlinks/plugins/xendit_flutter/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 13825b8a9334a850581300559b8839134b124670
+  Xendit: ecec120b229b162224b6d655af9711ae21e7ee54
+  xendit_flutter: f5be607b043841380976ab186f7dc4ed90aec6b0
+
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+
+COCOAPODS: 1.14.3
