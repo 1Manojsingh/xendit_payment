@@ -72,6 +72,8 @@ final bool expiryValidator = CardValidator.isExpiryValid("12", "2024");
 
 final bool cvnValidator = CardValidator.isCvnValid("123");
 ```
+## Reference
+This plugin reference from [fxendit](https://pub.dev/packages/fxendit). And using SDK Xendit Java and Swift 
 
 ## Issues
 Have any question, bugs, issues, or feature request you can go to our [GitHub](https://github.com/Irfan234-afif/xendit_flutter/issues).
