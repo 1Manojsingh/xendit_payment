@@ -6,6 +6,7 @@
 // https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms.
 
 import '../xendit_flutter.dart';
+import 'models/card_holder_data.dart';
 import 'service/platform/xendit_flutter_platform_interface.dart';
 
 class Xendit {
@@ -30,6 +31,7 @@ class Xendit {
     BillingDetails? billingDetails,
     Customer? customer,
     String? currency,
+    String? midLabel,
   }) {
     var params = <String, dynamic>{
       'publishedKey': publishableKey,
@@ -38,21 +40,10 @@ class Xendit {
       'shouldAuthenticate': shouldAuthenticate,
       'onBehalfOf': onBehalfOf,
     };
-    return platform.createSingleUseToken(params: params);
-  }
 
-  Future<TokenResult> createMultipleUseToken(
-    XCard card, {
-    String onBehalfOf = '',
-    BillingDetails? billingDetails,
-    Customer? customer,
-  }) async {
-    var params = <String, dynamic>{
-      'publishedKey': publishableKey,
-      'card': card.to(),
-      'isMultipleUse': true,
-      'onBehalfOf': onBehalfOf,
-    };
+    if (card.cardHolderData != null) {
+      params['cardHolderData'] = card.cardHolderData!.to();
+    }
 
     if (billingDetails != null) {
       params['billingDetails'] = billingDetails.to();
@@ -62,6 +53,47 @@ class Xendit {
       params['customer'] = customer.to();
     }
 
+    if (currency != null) {
+      params['currency'] = currency;
+    }
+
+    if (midLabel != null) {
+      params['midLabel'] = midLabel;
+    }
+
+    return platform.createSingleUseToken(params: params);
+  }
+
+  Future<TokenResult> createMultipleUseToken(
+    XCard card, {
+    String onBehalfOf = '',
+    BillingDetails? billingDetails,
+    Customer? customer,
+    String? midLabel,
+  }) async {
+    var params = <String, dynamic>{
+      'publishedKey': publishableKey,
+      'card': card.to(),
+      'isMultipleUse': true,
+      'onBehalfOf': onBehalfOf,
+    };
+
+    if (card.cardHolderData != null) {
+      params['cardHolderData'] = card.cardHolderData!.to();
+    }
+
+    if (billingDetails != null) {
+      params['billingDetails'] = billingDetails.to();
+    }
+
+    if (customer != null) {
+      params['customer'] = customer.to();
+    }
+
+    if (midLabel != null) {
+      params['midLabel'] = midLabel;
+    }
+
     return platform.createMultipleUseToken(params: params);
   }
 
@@ -69,14 +101,30 @@ class Xendit {
     String tokenId, {
     required int amount,
     required String currency,
+    String? cardCvn,
+    CardHolderData? cardHolderData,
+    String onBehalfOf = '',
+    String? midLabel,
   }) async {
     var params = <String, dynamic>{
       'publishedKey': publishableKey,
       'tokenId': tokenId,
       'amount': amount,
+      'currency': currency,
+      'onBehalfOf': onBehalfOf,
     };
 
-    params['currency'] = currency;
+    if (cardCvn != null) {
+      params['cardCvn'] = cardCvn;
+    }
+
+    if (cardHolderData != null) {
+      params['cardHolderData'] = cardHolderData.to();
+    }
+
+    if (midLabel != null) {
+      params['midLabel'] = midLabel;
+    }
 
     return platform.createAuthentication(params: params);
   }

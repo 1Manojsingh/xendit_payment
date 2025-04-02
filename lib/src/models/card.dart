@@ -1,4 +1,5 @@
 import '../utils/validator.dart';
+import 'card_holder_data.dart';
 
 /// Credit Card
 class XCard {
@@ -14,19 +15,27 @@ class XCard {
   /// Card Expiration Year
   final String expirationYear;
 
+  /// Card Holder Data
+  final CardHolderData? cardHolderData;
+
   XCard({
     required String creditCardNumber,
     required String creditCardCVN,
     required this.expirationMonth,
     required this.expirationYear,
+    this.cardHolderData,
   })  : creditCardNumber = CardValidator.cleanCardNumber(creditCardNumber),
         creditCardCVN = CardValidator.cleanCvn(creditCardCVN);
 
   /// Convert XCard to Map
-  Map<String, dynamic> to() => <String, dynamic>{
-        'creditCardNumber': creditCardNumber,
-        'creditCardCVN': creditCardCVN,
-        'expirationMonth': expirationMonth,
-        'expirationYear': expirationYear,
-      };
+  Map<String, dynamic> to() {
+    final Map<String, dynamic> cardMap = {
+      'creditCardNumber': creditCardNumber,
+      'creditCardCVN': creditCardCVN,
+      'expirationMonth': expirationMonth,
+      'expirationYear': expirationYear,
+    };
+
+    return cardMap;
+  }
 }

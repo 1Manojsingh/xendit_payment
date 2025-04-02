@@ -1,22 +1,38 @@
 package com.irfan.xendit_flutter;
 
 import android.app.Activity;
+import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.snowplowanalytics.snowplow.controller.TrackerController;
+import com.snowplowanalytics.snowplow.event.Structured;
 import com.xendit.AuthenticationCallback;
 import com.xendit.Models.Address;
 import com.xendit.Models.AuthenticatedToken;
 import com.xendit.Models.Authentication;
 import com.xendit.Models.BillingDetails;
 import com.xendit.Models.Card;
+import com.xendit.Models.CardHolderData;
 import com.xendit.Models.CardInfo;
 import com.xendit.Models.Customer;
 import com.xendit.Models.Token;
 import com.xendit.Models.XenditError;
 import com.xendit.TokenCallback;
+import com.xendit.Tracker.SnowplowTrackerBuilder;
 import com.xendit.Xendit;
+import com.xendit.network.BaseRequest;
+import com.xendit.network.DefaultResponseHandler;
+import com.xendit.network.NetworkHandler;
+import com.xendit.network.errors.NetworkError;
+import com.xendit.network.interfaces.ResultListener;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,17 +78,28 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         result.notImplemented();
         break;
     }
-//    if (call.method.equals("getPlatformVersion")) {
-//      result.success("Android " + android.os.Build.VERSION.RELEASE);
-//    } else {
-//      result.notImplemented();
-//    }
   }
 
   private void init(String publishedKey){
     if(activity != null){
       xendit = new Xendit(activity.getApplication().getApplicationContext(), publishedKey, activity);
     }
+  }
+
+
+  BaseRequest buildBaseRequest(int method, String url, String onBehalfOf, Type type, DefaultResponseHandler handler) {
+//    String encodedKey = this.encodeBase64(this.publishableKey + ":");
+//    String basicAuthCredentials = "Basic " + encodedKey;
+    BaseRequest request = new BaseRequest(method, url, type, handler);
+//    if (onBehalfOf != null && !onBehalfOf.isEmpty()) {
+//      request.addHeader("for-user-id", onBehalfOf);
+//    }
+
+//    request.addHeader("Authorization", basicAuthCredentials.replace("\n", ""));
+//    request.addHeader("x-client-identifier", "Xendit Android SDK");
+//    request.addHeader("client-version", "4.2.3");
+//    request.addHeader("client-type", "SDK");
+    return request;
   }
 
   private void createToken(@NonNull MethodCall call, @NonNull final Result result){
@@ -85,15 +112,18 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     Boolean shouldAuthenticate = call.hasArgument("shouldAuthenticate") ? call.argument("shouldAuthenticate")
             : true;
     boolean isMultipleUse = call.hasArgument("isMultipleUse") ? call.argument("isMultipleUse") : false;
+    String midLabel = call.hasArgument("midLabel") ? call.argument("midLabel") : "";
 
     Card card = cardFrom(call);
     BillingDetails billingDetails = billingFrom(call);
     Customer customer = customerFrom(call);
-    String currency = call.hasArgument("currency") ? call.argument("currency") : "IDR";
+    String currency = call.hasArgument("currency") ? call.argument("currency") : "PHP";
 
     TokenCallback tokenCallback = new TokenCallback() {
       @Override
-      public void onSuccess(Token token) {
+      public void onSuccess(Token token)
+      {
+
         result.success(tokenToMap(token));
       }
 
@@ -102,29 +132,55 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         result.error(xenditError.getErrorCode(), xenditError.getErrorMessage(), "");
       }
     };
-//    xendit.createSingleUseToken(card, amount, true, "", billingDetails, customer, "IDR", new TokenCallback() {
-//      @Override
-//      public void onSuccess(Token token) {
-//        // Handle successful tokenization
-//        // System.out.println("Token ID: " + token.getId());
-//        // return tokenToMap(token);
-//        result.success(tokenToMap(token));
+
+    BaseRequest<AuthenticatedToken> request = this.buildBaseRequest(1, "https://api.xendit.co/v2/credit_card_tokens", onBehalfOf, AuthenticatedToken.class,
+            null);
+    JsonObject cardData = new JsonObject();
+   //    if (card != null) {
+//      cardData.addProperty("account_number", card.getCreditCardNumber());
+//      cardData.addProperty("exp_year", card.getCardExpirationYear());
+//      cardData.addProperty("exp_month", card.getCardExpirationMonth());
+//      cardData.addProperty("cvn", card.getCreditCardCVN());
+//      CardHolderData cardHolderData = card.getCardHolder();
+//      if (cardHolderData != null) {
+//        cardData.addProperty("card_holder_first_name", cardHolderData.getFirstName());
+//        cardData.addProperty("card_holder_last_name", cardHolderData.getLastName());
+//        cardData.addProperty("card_holder_email", cardHolderData.getEmail());
+//        cardData.addProperty("card_holder_phone_number", cardHolderData.getPhoneNumber());
 //      }
 //
-//      @Override
-//      public void onError(XenditError xenditError) {
-//        // Handle error
-//        Map<String, Object> myMap = new HashMap<>();
-//        myMap.put("key1", 3.14);
-//        myMap.put("key2", 2.71);
-//        // result.success(myMap);
-//        result.error(xenditError.getErrorCode(), xenditError.getErrorMessage(), myMap);
-//      }
-//    });
+//      request.addJsonParam("card_data", cardData);
+//    }
+//
+
+   if (!isMultipleUse) {
+     request.addParam("amount", Integer.toString(amount));
+   }
+
+   if (currency != null) {
+     request.addParam("currency", currency);
+   }
+   if (card.getCreditCardCVN() != null) {
+     request.addParam("card_cvn", card.getCreditCardCVN());
+   }
+
+   if (midLabel != null) {
+     request.addParam("mid_label", midLabel);
+   }
+
+    Log.d("PAWAN", "createToken: " + new Gson().toJson(new String(request.getBody(), StandardCharsets.UTF_8)));
+    String cardNumber = card.getCreditCardNumber(); // Test card number
+    String expiryMonth = card.getCardExpirationMonth(); // Two-digit month
+    String expiryYear = card.getCardExpirationYear(); // Four-digit year
+    String cvv = card.getCreditCardCVN();
+
+            Card cards = new Card(cardNumber, expiryMonth, expiryYear, cvv, card.getCardHolder());
+    Log.d("PAWAN", "createToken: " + new Gson().toJson(new String(request.getBody(), StandardCharsets.UTF_8)));
     if(isMultipleUse){
-      xendit.createMultipleUseToken(card, onBehalfOf, billingDetails,customer, tokenCallback);
+      xendit.createMultipleUseToken(cards, onBehalfOf, tokenCallback);
     }else{
-      xendit.createSingleUseToken(card, amount.toString(), shouldAuthenticate, onBehalfOf, billingDetails, customer, currency, tokenCallback);
+      xendit.createSingleUseToken(cards, amount,shouldAuthenticate,tokenCallback);
+
     }
   }
 
@@ -138,12 +194,20 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     Integer _amount = call.argument("amount");
     int amount = _amount != null ? _amount : 0;
     String currency = null;
+    String cardCvn = null;
+    CardHolderData cardHolderData = cardHolderDataFrom(call);
+    String onBehalfOf = call.hasArgument("onBehalfOf") ? call.argument("onBehalfOf") : "";
+    String midLabel = call.hasArgument("midLabel") ? call.argument("midLabel") : "";
 
     if (call.hasArgument("currency")) {
       currency = call.argument("currency");
     }
 
-    xendit.createAuthentication(tokenId, amount, currency, new AuthenticationCallback() {
+    if (call.hasArgument("cardCvn")) {
+      cardCvn = call.argument("cardCvn");
+    }
+
+    xendit.createAuthentication(tokenId, Integer.toString(amount), currency, cardCvn, cardHolderData, onBehalfOf, midLabel, new AuthenticationCallback() {
       @Override
       public void onSuccess(Authentication authentication) {
         result.success(authenticationToMap(authentication));
@@ -156,6 +220,22 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     });
   }
 
+  private CardHolderData cardHolderDataFrom(@NonNull MethodCall call) {
+    if (call.hasArgument("cardHolderData")) {
+      Map<String, Object> map = call.argument("cardHolderData");
+
+      if (map != null) {
+        String firstName = (String) map.get("firstName");
+        String lastName = (String) map.get("lastName");
+        String email = (String) map.get("email");
+        String phoneNumber = (String) map.get("phoneNumber");
+        return new CardHolderData(firstName, lastName, email, phoneNumber);
+      }
+    }
+
+    return null;
+  }
+
   private Card cardFrom(@NonNull MethodCall call) {
     if (call.hasArgument("card")) {
       Map<String, Object> map = call.argument("card");
@@ -165,7 +245,16 @@ public class XenditFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         String creditCardCVN = (String) map.get("creditCardCVN");
         String expirationMonth = (String) map.get("expirationMonth");
         String expirationYear = (String) map.get("expirationYear");
-        return new Card(creditCardNumber, expirationMonth, expirationYear, creditCardCVN);
+        
+        CardHolderData cardHolderData = cardHolderDataFrom(call);
+
+        Log.d("TAG", "cardFrom cardHolderData: " + cardHolderData.getFirstName());
+
+        if (cardHolderData != null) {
+          return new Card(creditCardNumber, expirationMonth, expirationYear, creditCardCVN, cardHolderData);
+        } else {
+          return new Card(creditCardNumber, expirationMonth, expirationYear, creditCardCVN);
+        }
       }
     }
 

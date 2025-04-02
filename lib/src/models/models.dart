@@ -5,5 +5,6 @@ export 'authentication.dart';
 export 'billing.dart';
 export 'card_info.dart';
 export 'card.dart';
+export 'card_holder_data.dart';
 export 'customer.dart';
 export 'token.dart';
